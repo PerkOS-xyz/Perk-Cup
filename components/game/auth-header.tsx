@@ -3,17 +3,12 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useThirdwebAuth } from "@/hooks/use-thirdweb-auth";
-import { useDisconnect, useActiveWallet } from "thirdweb/react";
-import { Coins, Loader2, CircleDollarSign } from "lucide-react";
-import { ConnectButton } from "thirdweb/react";
-import { client } from "@/lib/thirdweb/client";
-import { celo } from "thirdweb/chains";
+import { Button } from "@/components/ui/button";
+import { useWalletAuth } from "@/hooks/use-wallet-auth";
+import { Coins, Loader2, CircleDollarSign, LogOut } from "lucide-react";
 
 export function AuthHeader() {
-  const { player, loading, isOnCelo, usdcBalance } = useThirdwebAuth();
-  const { disconnect } = useDisconnect();
-  const wallet = useActiveWallet();
+  const { player, loading, isOnCelo, usdcBalance, disconnect } = useWalletAuth();
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border">
@@ -67,19 +62,16 @@ export function AuthHeader() {
             </div>
           ) : null}
 
-          {/* Wallet Button */}
-          <ConnectButton 
-            client={client}
-            chain={celo}
-            theme="dark"
-            connectButton={{
-              label: "Connect",
-              className: "!bg-primary !text-primary-foreground !rounded-md !px-3 !py-1.5 !text-sm",
-            }}
-            detailsButton={{
-              className: "!bg-muted !rounded-md !px-3 !py-1.5 !text-sm",
-            }}
-          />
+          {/* Disconnect Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={disconnect}
+            className="gap-1 h-8 px-2 bg-transparent"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline text-xs">Disconnect</span>
+          </Button>
         </div>
       </div>
     </header>
