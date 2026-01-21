@@ -163,11 +163,34 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Check if on mobile device
+  const isMobile = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  }, []);
+
+  // Check if MetaMask app is available (has injected provider)
+  const hasInjectedProvider = useCallback(() => {
+    return typeof window !== "undefined" && !!window.ethereum;
+  }, []);
+
   const connect = useCallback(async () => {
     if (typeof window === "undefined") return;
     
     setIsConnecting(true);
     try {
+      // On mobile without injected provider, use deep link to MetaMask app
+      if (isMobile() && !hasInjectedProvider()) {
+        // Get current URL for MetaMask to return to after connection
+        const currentUrl = window.location.href;
+        // MetaMask deep link - opens the app and connects to this dApp
+        const metamaskDeepLink = `https://metamask.app.link/dapp/${currentUrl.replace(/^https?:\/\//, "")}`;
+        window.location.href = metamaskDeepLink;
+        return;
+      }
+
       if (window.ethereum) {
         // First request accounts
         const accounts = await window.ethereum.request({ 
@@ -188,7 +211,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
           }
         }
       } else {
-        // Open MetaMask install page if not available
+        // Desktop without MetaMask - open install page
         window.open("https://metamask.io/download/", "_blank");
       }
     } catch (err) {
@@ -196,7 +219,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsConnecting(false);
     }
-  }, [switchToCelo]);
+  }, [switchToCelo, isMobile, hasInjectedProvider, fetchChainId, fetchUsdcBalance]);
 
   const disconnect = useCallback(() => {
     setAddress(null);
