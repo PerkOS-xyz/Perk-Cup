@@ -5,73 +5,106 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useWalletAuth } from "@/hooks/use-wallet-auth";
-import { Coins, Loader2, CircleDollarSign, LogOut } from "lucide-react";
+import { useWeb3 } from "@/lib/web3/provider";
+import { Coins, Loader2, CircleDollarSign, LogOut, Copy, Check } from "lucide-react";
+import { useState } from "react";
+
+// Truncate wallet address: first 5 chars + "..." + last 5 chars
+function truncateAddress(address: string): string {
+  if (!address || address.length < 12) return address;
+  return `${address.slice(0, 5)}...${address.slice(-5)}`;
+}
 
 export function AuthHeader() {
   const { player, loading, isOnCelo, usdcBalance, disconnect } = useWalletAuth();
+  const { address } = useWeb3();
+  const [copied, setCopied] = useState(false);
+
+  const copyAddress = async () => {
+    if (address) {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border">
-      <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3">
-          <Image
-            src="/images/mascot-hero.png"
-            alt="Perk"
-            width={40}
-            height={40}
-            className="rounded-full border-2 border-primary"
-          />
-          <div>
-            <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Perk Cup
-            </h1>
-            {player && (
-              <p className="text-xs text-muted-foreground">
-                Level {player.level}
-              </p>
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
+      <div className="max-w-2xl mx-auto px-4 py-2.5">
+        {/* Main header row */}
+        <div className="flex items-center justify-between gap-3">
+          {/* Left: Logo and user info */}
+          <Link href="/" className="flex items-center gap-2.5 min-w-0">
+            <div className="relative">
+              <Image
+                src="/images/mascot-hero.png"
+                alt="Perk"
+                width={36}
+                height={36}
+                className="rounded-full border-2 border-primary/50"
+              />
+              {isOnCelo && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-bold text-foreground">Perk Cup</h1>
+                {player && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                    Lv.{player.level}
+                  </span>
+                )}
+              </div>
+              {/* Wallet address with copy */}
+              {address && (
+                <button
+                  onClick={copyAddress}
+                  className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors font-mono"
+                >
+                  {truncateAddress(address)}
+                  {copied ? (
+                    <Check className="h-2.5 w-2.5 text-green-500" />
+                  ) : (
+                    <Copy className="h-2.5 w-2.5 opacity-50" />
+                  )}
+                </button>
+              )}
+            </div>
+          </Link>
+
+          {/* Right: Stats and actions */}
+          <div className="flex items-center gap-1.5">
+            {/* USDC Balance */}
+            {usdcBalance !== null && (
+              <div className="flex items-center gap-1 bg-blue-500/10 px-2 py-1 rounded-lg border border-blue-500/20">
+                <CircleDollarSign className="h-3.5 w-3.5 text-blue-400" />
+                <span className="text-xs font-semibold text-blue-400">{usdcBalance}</span>
+              </div>
             )}
+
+            {/* Credits Display */}
+            {loading ? (
+              <div className="px-2 py-1">
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+              </div>
+            ) : player ? (
+              <div className="flex items-center gap-1 bg-accent/10 px-2 py-1 rounded-lg border border-accent/20">
+                <Coins className="h-3.5 w-3.5 text-accent" />
+                <span className="text-xs font-semibold text-accent">{player.credits}</span>
+              </div>
+            ) : null}
+
+            {/* Disconnect Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={disconnect}
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </Button>
           </div>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          {/* Celo Chain Badge */}
-          <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-            isOnCelo 
-              ? "bg-green-500/10 text-green-500 border border-green-500/20" 
-              : "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
-          }`}>
-            <div className={`w-2 h-2 rounded-full ${isOnCelo ? "bg-green-500" : "bg-yellow-500"}`} />
-            <span className="hidden sm:inline">{isOnCelo ? "Celo" : "Wrong Network"}</span>
-          </div>
-
-          {/* USDC Balance */}
-          {usdcBalance !== null && (
-            <div className="flex items-center gap-1.5 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
-              <CircleDollarSign className="h-3.5 w-3.5 text-blue-500" />
-              <span className="text-xs font-medium text-blue-500">{usdcBalance}</span>
-            </div>
-          )}
-
-          {/* Credits Display */}
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-          ) : player ? (
-            <div className="flex items-center gap-1.5 bg-accent/10 px-2.5 py-1 rounded-full">
-              <Coins className="h-3.5 w-3.5 text-accent" />
-              <span className="text-xs font-medium">{player.credits}</span>
-            </div>
-          ) : null}
-
-          {/* Disconnect Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={disconnect}
-            className="gap-1 h-8 px-2 bg-transparent"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline text-xs">Disconnect</span>
-          </Button>
         </div>
       </div>
     </header>
