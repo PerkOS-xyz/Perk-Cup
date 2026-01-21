@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react"
-
+import React from "react";
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useParaAuth } from "@/hooks/use-para-auth";
+import { MascotSlideshow } from "@/components/game/mascot-slideshow";
+import { useWalletAuth } from "@/hooks/use-wallet-auth";
 import { GAMES } from "@/lib/game-types";
 import {
   Car,
@@ -22,7 +22,6 @@ import {
   LogOut,
   Loader2,
 } from "lucide-react";
-
 const iconMap: Record<string, React.ReactNode> = {
   car: <Car className="h-6 w-6" />,
   "arrow-up": <ArrowUp className="h-6 w-6" />,
@@ -33,7 +32,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export function MainMenu() {
-  const { isConnected, player, loading, connect, disconnect } = useParaAuth();
+  const { isConnected, player, loading, connect, disconnect } = useWalletAuth();
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
 
   if (loading) {
@@ -79,7 +78,7 @@ export function MainMenu() {
             </div>
           </div>
 
-          {isConnected ? (
+          {isConnected && (
             <Button
               variant="outline"
               size="sm"
@@ -88,11 +87,6 @@ export function MainMenu() {
             >
               <LogOut className="h-4 w-4" />
               <span className="hidden sm:inline">Disconnect</span>
-            </Button>
-          ) : (
-            <Button onClick={connect} className="gap-2">
-              <Wallet className="h-4 w-4" />
-              Connect
             </Button>
           )}
         </header>
@@ -120,13 +114,7 @@ export function MainMenu() {
         {/* Games Grid */}
         {!isConnected ? (
           <Card className="p-8 text-center bg-card/50 backdrop-blur border-primary/20 flex-1 flex flex-col items-center justify-center">
-            <Image
-              src="/images/mascot.png"
-              alt="Perk"
-              width={120}
-              height={120}
-              className="mx-auto mb-6 animate-float"
-            />
+            <MascotSlideshow />
             <h2 className="text-2xl font-bold mb-2">Welcome to Perk Olympics!</h2>
             <p className="text-muted-foreground mb-6">
               Connect your wallet to start playing and competing!

@@ -38,6 +38,7 @@
     "@radix-ui/react-toggle": "1.1.1",
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
+    "@rainbow-me/rainbowkit": "2.2.10",
     "@supabase/ssr": "0.8.0",
     "@supabase/supabase-js": "latest",
     "@tanstack/react-query": "5.90.19",
@@ -62,6 +63,8 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^1.1.2",
+    "viem": "latest",
+    "wagmi": "3.3.4",
     "zod": "3.25.76"
   },
   "devDependencies": {
