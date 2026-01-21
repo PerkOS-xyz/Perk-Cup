@@ -3,12 +3,20 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useWalletAuth } from "@/hooks/use-wallet-auth";
-import { Wallet, LogOut, Coins, Loader2 } from "lucide-react";
+import { LogOut, Coins, Loader2, Wallet } from "lucide-react";
 
 export function Header() {
-  const { isConnected, player, loading, connect, disconnect } = useWalletAuth();
+  const pathname = usePathname();
+  const { isConnected, player, loading, disconnect, connect } = useWalletAuth();
+  
+  // Hide header on landing page when not connected
+  const isLandingPage = pathname === "/";
+  if (isLandingPage && !isConnected && !loading) {
+    return null;
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border">
@@ -54,12 +62,7 @@ export function Header() {
                 <span className="hidden sm:inline">Disconnect</span>
               </Button>
             </>
-          ) : (
-            <Button onClick={connect} size="sm" className="gap-2">
-              <Wallet className="h-4 w-4" />
-              Connect
-            </Button>
-          )}
+          ) : null}
         </div>
       </div>
     </header>
