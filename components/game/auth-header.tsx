@@ -1,19 +1,22 @@
 "use client";
 
+import { Button } from "@/components/ui/button"
+import { LogOut } from "lucide-react";
+
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { useWalletAuth } from "@/hooks/use-wallet-auth";
-import { useWeb3 } from "@/lib/web3/provider";
-import { LogOut, Coins, Loader2, CircleDollarSign } from "lucide-react";
+import { useThirdwebAuth } from "@/hooks/use-thirdweb-auth";
+import { useDisconnect, useActiveWallet } from "thirdweb/react";
+import { Coins, Loader2, CircleDollarSign } from "lucide-react";
+import { ConnectButton } from "thirdweb/react";
+import { client } from "@/lib/thirdweb/client";
+import { celo } from "thirdweb/chains";
 
 export function AuthHeader() {
-  const { player, loading, disconnect } = useWalletAuth();
-  const { usdcBalance, chainId } = useWeb3();
-  
-  // Check if on Celo Mainnet (0xa4ec = 42220)
-  const isOnCelo = chainId === "0xa4ec";
+  const { player, loading, isOnCelo, usdcBalance } = useThirdwebAuth();
+  const { disconnect } = useDisconnect();
+  const wallet = useActiveWallet();
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border">
@@ -67,16 +70,19 @@ export function AuthHeader() {
             </div>
           ) : null}
 
-          {/* Disconnect Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => disconnect()}
-            className="gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Disconnect</span>
-          </Button>
+          {/* Wallet Button */}
+          <ConnectButton 
+            client={client}
+            chain={celo}
+            theme="dark"
+            connectButton={{
+              label: "Connect",
+              className: "!bg-primary !text-primary-foreground !rounded-md !px-3 !py-1.5 !text-sm",
+            }}
+            detailsButton={{
+              className: "!bg-muted !rounded-md !px-3 !py-1.5 !text-sm",
+            }}
+          />
         </div>
       </div>
     </header>

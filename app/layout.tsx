@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { Web3Provider } from "@/lib/web3/provider";
+import { Web3Provider } from "@/lib/thirdweb/provider";
 import "./globals.css";
 
 const _geist = Geist({ subsets: ["latin"] });

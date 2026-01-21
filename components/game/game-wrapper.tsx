@@ -5,10 +5,12 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useWalletAuth } from "@/hooks/use-wallet-auth";
+import { useThirdwebAuth } from "@/hooks/use-thirdweb-auth";
 import { getGameBySlug, type Game } from "@/lib/game-types";
 import { AuthHeader } from "@/components/game/auth-header";
 import { ArrowLeft, Coins, Play, Trophy, RotateCcw, Home } from "lucide-react";
+import { useWalletAuth } from "@/hooks/use-wallet-auth"; // Import added for useWalletAuth
+
 interface GameWrapperProps {
   slug: string;
   children: (props: {
@@ -22,7 +24,7 @@ interface GameWrapperProps {
 
 export function GameWrapper({ slug, children }: GameWrapperProps) {
   const router = useRouter();
-  const { player, spendCredits, addScore, isConnected, loading } = useWalletAuth();
+  const { player, spendCredits, addScore, isConnected, loading } = useThirdwebAuth();
   const [game, setGame] = useState<Game | null>(null);
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
   const [score, setScore] = useState(0);

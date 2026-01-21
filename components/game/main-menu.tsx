@@ -8,7 +8,10 @@ import { Card } from "@/components/ui/card";
 import { MascotSlideshow } from "@/components/game/mascot-slideshow";
 import { PublicHeader } from "@/components/game/public-header";
 import { AuthHeader } from "@/components/game/auth-header";
-import { useWalletAuth } from "@/hooks/use-wallet-auth";
+import { useWalletAuth } from "@/hooks/use-thirdweb-auth"; // Declare the useWalletAuth import
+import { ConnectButton } from "thirdweb/react";
+import { client } from "@/lib/thirdweb/client";
+import { celo } from "thirdweb/chains";
 import { GAMES } from "@/lib/game-types";
 import {
   Car,
@@ -32,7 +35,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export function MainMenu() {
-  const { isConnected, player, loading, connect, disconnect } = useWalletAuth();
+  const { isConnected, player, loading, connect } = useWalletAuth();
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
 
   if (loading) {
@@ -86,10 +89,15 @@ export function MainMenu() {
               <p className="text-muted-foreground mb-6">
                 Connect your wallet to start playing and competing!
               </p>
-              <Button onClick={connect} size="lg" className="gap-2 animate-pulse-glow">
-                <Wallet className="h-5 w-5" />
-                Connect Wallet
-              </Button>
+              <ConnectButton 
+                client={client} 
+                chain={celo}
+                theme="dark"
+                connectButton={{
+                  label: "Connect Wallet",
+                  className: "!bg-primary !text-primary-foreground !rounded-md !px-6 !py-3 !font-medium animate-pulse-glow",
+                }}
+              />
             </Card>
           ) : (
             <div className="flex-1">
