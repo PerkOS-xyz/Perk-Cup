@@ -3,9 +3,12 @@
 export function MascotSlideshow() {
   return (
     <div className="relative w-64 h-64 mx-auto mb-6">
-      <img
-        src="/images/maskot-intro-01.gif"
-        alt="Perk Mascot"
+      <video
+        src="https://cup.perkgames.xyz/videos/perkito-run.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
         className="w-full h-full object-contain rounded-2xl"
       />
       
