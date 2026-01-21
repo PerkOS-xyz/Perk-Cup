@@ -8,8 +8,7 @@ import { Card } from "@/components/ui/card";
 import { MascotSlideshow } from "@/components/game/mascot-slideshow";
 import { PublicHeader } from "@/components/game/public-header";
 import { AuthHeader } from "@/components/game/auth-header";
-import { useDynamicAuth } from "@/hooks/use-dynamic-auth";
-import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
+import { useWalletAuth } from "@/hooks/use-wallet-auth";
 import { GAMES } from "@/lib/game-types";
 import {
   Car,
@@ -33,7 +32,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export function MainMenu() {
-  const { isConnected, player, loading, openConnectModal } = useDynamicAuth();
+  const { isConnected, player, loading, connect, isConnecting } = useWalletAuth();
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
 
   if (loading) {
@@ -87,7 +86,19 @@ export function MainMenu() {
               <p className="text-muted-foreground mb-6">
                 Connect your wallet to start playing and competing!
               </p>
-              <DynamicWidget />
+              <Button 
+                onClick={connect} 
+                size="lg" 
+                className="gap-2 animate-pulse-glow"
+                disabled={isConnecting}
+              >
+                {isConnecting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Wallet className="h-5 w-5" />
+                )}
+                {isConnecting ? "Connecting..." : "Connect Wallet"}
+              </Button>
             </Card>
           ) : (
             <div className="flex-1">
