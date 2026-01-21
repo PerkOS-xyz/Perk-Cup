@@ -8,9 +8,8 @@ import { Card } from "@/components/ui/card";
 import { MascotSlideshow } from "@/components/game/mascot-slideshow";
 import { PublicHeader } from "@/components/game/public-header";
 import { AuthHeader } from "@/components/game/auth-header";
-import { WalletModal } from "@/components/game/wallet-modal";
-import { useWalletAuth } from "@/hooks/use-wallet-auth";
-import { useWeb3 } from "@/lib/web3/provider";
+import { useDynamicAuth } from "@/hooks/use-dynamic-auth";
+import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
 import { GAMES } from "@/lib/game-types";
 import {
   Car,
@@ -34,8 +33,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export function MainMenu() {
-  const { isConnected, player, loading, isConnecting } = useWalletAuth();
-  const { isModalOpen, openModal, closeModal, connectMetaMask } = useWeb3();
+  const { isConnected, player, loading, openConnectModal } = useDynamicAuth();
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
 
   if (loading) {
@@ -89,30 +87,7 @@ export function MainMenu() {
               <p className="text-muted-foreground mb-6">
                 Connect your wallet to start playing and competing!
               </p>
-              <Button 
-                onClick={openModal} 
-                size="lg" 
-                className="gap-2 animate-pulse-glow"
-                disabled={isConnecting}
-              >
-                {isConnecting ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Wallet className="h-5 w-5" />
-                )}
-                {isConnecting ? "Connecting..." : "Connect Wallet"}
-              </Button>
-              
-              <WalletModal 
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                onConnect={(type) => {
-                  if (type === "metamask") {
-                    connectMetaMask();
-                  }
-                }}
-                isConnecting={isConnecting}
-              />
+              <DynamicWidget />
             </Card>
           ) : (
             <div className="flex-1">

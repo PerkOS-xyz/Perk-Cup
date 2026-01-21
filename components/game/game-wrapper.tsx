@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useWalletAuth } from "@/hooks/use-wallet-auth";
+import { useDynamicAuth } from "@/hooks/use-dynamic-auth";
 import { getGameBySlug, type Game } from "@/lib/game-types";
 import { AuthHeader } from "@/components/game/auth-header";
 import { ArrowLeft, Coins, Play, Trophy, RotateCcw, Home } from "lucide-react";
@@ -23,7 +23,7 @@ interface GameWrapperProps {
 
 export function GameWrapper({ slug, children }: GameWrapperProps) {
   const router = useRouter();
-  const { player, spendCredits, addScore, isConnected, loading } = useWalletAuth();
+  const { player, spendCredits, addScore, isConnected, loading } = useDynamicAuth();
   const [game, setGame] = useState<Game | null>(null);
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
   const [score, setScore] = useState(0);

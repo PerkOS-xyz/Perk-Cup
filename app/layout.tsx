@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { Web3Provider } from "@/lib/web3/provider";
+import { DynamicProvider } from "@/lib/dynamic/provider";
 import "./globals.css";
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -31,9 +31,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="font-sans antialiased">
-        <Web3Provider>
+        <DynamicProvider>
           {children}
-        </Web3Provider>
+        </DynamicProvider>
         <Analytics />
       </body>
     </html>

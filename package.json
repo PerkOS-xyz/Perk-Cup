@@ -12,6 +12,8 @@
     "@aws-sdk/client-lambda": "latest",
     "@aws-sdk/credential-providers": "latest",
     "@coinbase/wallet-mobile-sdk": "latest",
+    "@dynamic-labs/ethereum": "4.53.1",
+    "@dynamic-labs/sdk-react-core": "4.57.0",
     "@getpara/react-sdk": "2.6.0",
     "@hookform/resolvers": "^3.10.0",
     "@mobile-wallet-protocol/client": "latest",

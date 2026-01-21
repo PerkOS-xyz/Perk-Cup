@@ -3,12 +3,12 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { useWalletAuth } from "@/hooks/use-wallet-auth";
-import { Coins, Loader2, CircleDollarSign, LogOut } from "lucide-react";
+import { useDynamicAuth } from "@/hooks/use-dynamic-auth";
+import { DynamicWidget } from "@dynamic-labs/sdk-react-core";
+import { Coins, Loader2, CircleDollarSign } from "lucide-react";
 
 export function AuthHeader() {
-  const { player, loading, isOnCelo, usdcBalance, disconnect } = useWalletAuth();
+  const { player, loading, isOnCelo, usdcBalance } = useDynamicAuth();
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border">
@@ -62,16 +62,8 @@ export function AuthHeader() {
             </div>
           ) : null}
 
-          {/* Disconnect Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={disconnect}
-            className="gap-1 h-8 px-2 bg-transparent"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline text-xs">Disconnect</span>
-          </Button>
+          {/* Dynamic Widget for account management */}
+          <DynamicWidget />
         </div>
       </div>
     </header>
