@@ -3,7 +3,7 @@
 import React from "react"
 
 import { useEffect, useRef, useCallback, useState } from "react";
-import Image from "next/image";
+
 
 interface PerkRacerProps {
   onGameOver: (score: number) => void;
@@ -257,11 +257,10 @@ export function PerkRacer({ onGameOver, setScore }: PerkRacerProps) {
           transform: "translateX(-50%)",
         }}
       >
-        <Image
+        <img
           src="/images/mascot.png"
           alt="Perk"
-          fill
-          className="object-contain drop-shadow-lg"
+          className="w-full h-full object-contain drop-shadow-lg"
         />
       </div>
       
