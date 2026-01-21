@@ -1,6 +1,6 @@
 "use client";
 
-import { useModal, useAccount, useDisconnect } from "@getpara/react-sdk";
+import { useModal, useAccount, useLogout } from "@getpara/react-sdk";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -17,7 +17,7 @@ interface Player {
 export function useParaAuth() {
   const { openModal } = useModal();
   const { address, isConnected } = useAccount();
-  const { disconnect } = useDisconnect();
+  const logoutMutation = useLogout();
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -82,6 +82,13 @@ export function useParaAuth() {
   const connect = useCallback(() => {
     openModal();
   }, [openModal]);
+
+  const disconnect = useCallback(() => {
+    if (logoutMutation?.logout) {
+      logoutMutation.logout();
+      setPlayer(null);
+    }
+  }, [logoutMutation]);
 
   const refreshPlayer = useCallback(async () => {
     if (address) {
