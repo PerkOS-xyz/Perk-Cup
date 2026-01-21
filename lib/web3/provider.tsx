@@ -27,7 +27,10 @@ interface Web3ContextType {
   usdcBalance: string | null;
   chainId: string | null;
   isOnCelo: boolean;
-  connect: () => Promise<void>;
+  isModalOpen: boolean;
+  openModal: () => void;
+  closeModal: () => void;
+  connectMetaMask: () => Promise<void>;
   disconnect: () => void;
   refreshUsdcBalance: () => Promise<void>;
 }
@@ -39,7 +42,10 @@ const Web3Context = createContext<Web3ContextType>({
   usdcBalance: null,
   chainId: null,
   isOnCelo: false,
-  connect: async () => {},
+  isModalOpen: false,
+  openModal: () => {},
+  closeModal: () => {},
+  connectMetaMask: async () => {},
   disconnect: () => {},
   refreshUsdcBalance: async () => {},
 });
@@ -51,8 +57,12 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
   const [chainId, setChainId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const isOnCelo = chainId === "0xa4ec";
+  
+  const openModal = useCallback(() => setIsModalOpen(true), []);
+  const closeModal = useCallback(() => setIsModalOpen(false), []);
 
   const fetchUsdcBalance = useCallback(async (walletAddress: string) => {
     if (typeof window === "undefined" || !window.ethereum) return;
@@ -66,12 +76,18 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         params: [{ to: USDC_CONTRACT_ADDRESS, data }, "latest"],
       }) as string;
       
+      // Handle empty or invalid results
+      if (!result || result === "0x" || result === "0x0") {
+        setUsdcBalance("0.00");
+        return;
+      }
+      
       const balanceWei = BigInt(result);
       const balanceFormatted = (Number(balanceWei) / Math.pow(10, USDC_DECIMALS)).toFixed(2);
       setUsdcBalance(balanceFormatted);
     } catch (err) {
       console.error("Failed to fetch USDC balance:", err);
-      setUsdcBalance(null);
+      setUsdcBalance("0.00");
     }
   }, []);
 
@@ -120,10 +136,11 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }, []);
 
-  const connect = useCallback(async () => {
+  const connectMetaMask = useCallback(async () => {
     if (typeof window === "undefined") return;
     
     setIsConnecting(true);
+    setIsModalOpen(false);
     try {
       // On mobile without injected provider, use deep link
       if (isMobile() && !window.ethereum) {
@@ -197,7 +214,10 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         usdcBalance,
         chainId,
         isOnCelo,
-        connect,
+        isModalOpen,
+        openModal,
+        closeModal,
+        connectMetaMask,
         disconnect,
         refreshUsdcBalance,
       }}

@@ -8,7 +8,9 @@ import { Card } from "@/components/ui/card";
 import { MascotSlideshow } from "@/components/game/mascot-slideshow";
 import { PublicHeader } from "@/components/game/public-header";
 import { AuthHeader } from "@/components/game/auth-header";
+import { WalletModal } from "@/components/game/wallet-modal";
 import { useWalletAuth } from "@/hooks/use-wallet-auth";
+import { useWeb3 } from "@/lib/web3/provider";
 import { GAMES } from "@/lib/game-types";
 import {
   Car,
@@ -32,7 +34,8 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export function MainMenu() {
-  const { isConnected, player, loading, connect, isConnecting } = useWalletAuth();
+  const { isConnected, player, loading, isConnecting } = useWalletAuth();
+  const { isModalOpen, openModal, closeModal, connectMetaMask } = useWeb3();
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
 
   if (loading) {
@@ -87,7 +90,7 @@ export function MainMenu() {
                 Connect your wallet to start playing and competing!
               </p>
               <Button 
-                onClick={connect} 
+                onClick={openModal} 
                 size="lg" 
                 className="gap-2 animate-pulse-glow"
                 disabled={isConnecting}
@@ -99,6 +102,17 @@ export function MainMenu() {
                 )}
                 {isConnecting ? "Connecting..." : "Connect Wallet"}
               </Button>
+              
+              <WalletModal 
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                onConnect={(type) => {
+                  if (type === "metamask") {
+                    connectMetaMask();
+                  }
+                }}
+                isConnecting={isConnecting}
+              />
             </Card>
           ) : (
             <div className="flex-1">
