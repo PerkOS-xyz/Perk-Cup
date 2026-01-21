@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { MascotSlideshow } from "@/components/game/mascot-slideshow";
 import { PublicHeader } from "@/components/game/public-header";
 import { AuthHeader } from "@/components/game/auth-header";
-import { useWalletAuth } from "@/hooks/use-thirdweb-auth"; // Declare the useWalletAuth import
+import { useThirdwebAuth } from "@/hooks/use-thirdweb-auth";
 import { ConnectButton } from "thirdweb/react";
 import { client } from "@/lib/thirdweb/client";
 import { celo } from "thirdweb/chains";
@@ -35,7 +35,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export function MainMenu() {
-  const { isConnected, player, loading, connect } = useWalletAuth();
+  const { isConnected, player, loading } = useThirdwebAuth();
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
 
   if (loading) {

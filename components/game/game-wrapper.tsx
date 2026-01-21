@@ -9,7 +9,6 @@ import { useThirdwebAuth } from "@/hooks/use-thirdweb-auth";
 import { getGameBySlug, type Game } from "@/lib/game-types";
 import { AuthHeader } from "@/components/game/auth-header";
 import { ArrowLeft, Coins, Play, Trophy, RotateCcw, Home } from "lucide-react";
-import { useWalletAuth } from "@/hooks/use-wallet-auth"; // Import added for useWalletAuth
 
 interface GameWrapperProps {
   slug: string;
