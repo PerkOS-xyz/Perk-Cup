@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,7 +18,6 @@ import {
   Coins,
   Trophy,
   Wallet,
-  LogOut,
   Loader2,
 } from "lucide-react";
 const iconMap: Record<string, React.ReactNode> = {
@@ -55,42 +53,7 @@ export function MainMenu() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-md mx-auto px-4 py-6 min-h-screen flex flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/images/mascot-hero.png"
-              alt="Perk Mascot"
-              width={48}
-              height={48}
-              className="rounded-full border-2 border-primary"
-            />
-            <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Perk Olympics
-              </h1>
-              {player && (
-                <p className="text-xs text-muted-foreground">
-                  Level {player.level} - {player.username}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {isConnected && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => disconnect()}
-              className="gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Disconnect</span>
-            </Button>
-          )}
-        </header>
-
+      <div className="relative z-10 max-w-md mx-auto px-4 py-6 min-h-[calc(100vh-60px)] flex flex-col">
         {/* Stats Bar */}
         {player && (
           <Card className="p-4 mb-6 bg-card/50 backdrop-blur border-primary/20">

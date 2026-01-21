@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Web3Provider } from "@/lib/web3/provider";
+import { Header } from "@/components/game/header";
 import "./globals.css";
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -31,7 +32,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="font-sans antialiased">
-        <Web3Provider>{children}</Web3Provider>
+        <Web3Provider>
+          <Header />
+          <main>{children}</main>
+        </Web3Provider>
         <Analytics />
       </body>
     </html>

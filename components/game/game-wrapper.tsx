@@ -48,19 +48,12 @@ export function GameWrapper({ slug, children }: GameWrapperProps) {
   }, [loading, isConnected, player, router]);
 
   const startGame = useCallback(async () => {
-    console.log("[v0] startGame called", { game, player });
-    if (!game || !player) {
-      console.log("[v0] Cannot start - missing game or player");
-      return;
-    }
+    if (!game || !player) return;
     
-    console.log("[v0] Spending credits:", game.credit_cost);
     const success = await spendCredits(game.credit_cost);
-    console.log("[v0] spendCredits result:", success);
     if (success) {
       setScore(0);
       setGameState("playing");
-      console.log("[v0] Game started!");
     }
   }, [game, player, spendCredits]);
 
@@ -92,9 +85,9 @@ export function GameWrapper({ slug, children }: GameWrapperProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
-      <header className="flex items-center justify-between p-4 border-b border-border">
+    <div className="min-h-[calc(100vh-60px)] bg-background flex flex-col">
+      {/* Game Header */}
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <Button variant="ghost" size="sm" onClick={() => router.push("/")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
@@ -102,11 +95,8 @@ export function GameWrapper({ slug, children }: GameWrapperProps) {
         <h1 className={`font-bold bg-gradient-to-r ${game.color} bg-clip-text text-transparent`}>
           {game.name}
         </h1>
-        <div className="flex items-center gap-1 text-sm">
-          <Coins className="h-4 w-4 text-accent" />
-          <span>{player?.credits || 0}</span>
-        </div>
-      </header>
+        <div className="w-16" /> {/* Spacer for centering */}
+      </div>
 
       {/* Game Area */}
       <div className="flex-1 flex flex-col p-4">
