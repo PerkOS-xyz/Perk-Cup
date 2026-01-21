@@ -1,16 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 
 // Celo Mainnet configuration
 const CELO_MAINNET = {
   chainId: "0xa4ec", // 42220 in hex
   chainName: "Celo Mainnet",
-  nativeCurrency: {
-    name: "CELO",
-    symbol: "CELO",
-    decimals: 18,
-  },
+  nativeCurrency: { name: "CELO", symbol: "CELO", decimals: 18 },
   rpcUrls: ["https://forno.celo.org"],
   blockExplorerUrls: ["https://celoscan.io"],
 };
@@ -54,6 +50,11 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
 
   const isOnCelo = chainId === "0xa4ec";
 
+  const isMobile = useCallback(() => {
+    if (typeof window === "undefined") return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }, []);
+
   const fetchUsdcBalance = useCallback(async (walletAddress: string) => {
     if (typeof window === "undefined" || !window.ethereum) return;
     
@@ -66,12 +67,17 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         params: [{ to: USDC_CONTRACT_ADDRESS, data }, "latest"],
       }) as string;
       
+      if (!result || result === "0x" || result === "0x0") {
+        setUsdcBalance("0.00");
+        return;
+      }
+      
       const balanceWei = BigInt(result);
       const balanceFormatted = (Number(balanceWei) / Math.pow(10, USDC_DECIMALS)).toFixed(2);
       setUsdcBalance(balanceFormatted);
     } catch (err) {
       console.error("Failed to fetch USDC balance:", err);
-      setUsdcBalance(null);
+      setUsdcBalance("0.00");
     }
   }, []);
 
@@ -90,8 +96,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const switchToCelo = useCallback(async () => {
-    if (typeof window === "undefined" || !window.ethereum) return false;
-    
+    if (!window.ethereum) return false;
     try {
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
@@ -111,13 +116,9 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
           return false;
         }
       }
+      console.error("Failed to switch to Celo:", switchError);
       return false;
     }
-  }, []);
-
-  const isMobile = useCallback(() => {
-    if (typeof window === "undefined") return false;
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }, []);
 
   const connect = useCallback(async () => {
@@ -161,31 +162,30 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Listen for account and chain changes
-  React.useEffect(() => {
-    if (typeof window === "undefined" || !window.ethereum) return;
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.ethereum) {
+      const handleAccountsChanged = (accounts: string[]) => {
+        if (accounts.length === 0) {
+          setAddress(null);
+          setUsdcBalance(null);
+        } else {
+          setAddress(accounts[0]);
+          fetchUsdcBalance(accounts[0]);
+        }
+      };
 
-    const handleAccountsChanged = (accounts: string[]) => {
-      if (accounts.length === 0) {
-        setAddress(null);
-        setUsdcBalance(null);
-      } else {
-        setAddress(accounts[0]);
-        fetchUsdcBalance(accounts[0]);
-      }
-    };
+      const handleChainChanged = (newChainId: string) => {
+        setChainId(newChainId);
+        if (address) fetchUsdcBalance(address);
+      };
 
-    const handleChainChanged = (newChainId: string) => {
-      setChainId(newChainId);
-      if (address) fetchUsdcBalance(address);
-    };
-
-    window.ethereum.on("accountsChanged", handleAccountsChanged);
-    window.ethereum.on("chainChanged", handleChainChanged);
-    
-    return () => {
-      window.ethereum?.removeListener("accountsChanged", handleAccountsChanged);
-      window.ethereum?.removeListener("chainChanged", handleChainChanged);
-    };
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+      window.ethereum.on("chainChanged", handleChainChanged);
+      return () => {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+        window.ethereum.removeListener("chainChanged", handleChainChanged);
+      };
+    }
   }, [address, fetchUsdcBalance]);
 
   return (
