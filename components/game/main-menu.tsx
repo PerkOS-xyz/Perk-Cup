@@ -82,7 +82,7 @@ export function MainMenu() {
           {!isConnected ? (
             <Card className="p-8 text-center bg-card/50 backdrop-blur border-primary/20 flex-1 flex flex-col items-center justify-center">
               <MascotSlideshow />
-              <h2 className="text-2xl font-bold mb-2">Welcome to Perk Olympics!</h2>
+              <h2 className="text-2xl font-bold mb-2">Welcome to Perk Cup!</h2>
               <p className="text-muted-foreground mb-6">
                 Connect your wallet to start playing and competing!
               </p>

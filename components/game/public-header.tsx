@@ -17,7 +17,7 @@ export function PublicHeader() {
             className="rounded-full border-2 border-primary"
           />
           <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Perk Olympics
+            Perk Cup
           </h1>
         </Link>
       </div>

@@ -9,7 +9,7 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Perk Olympics - Web3 Mini-Games",
+  title: "Perk Cup - Web3 Mini-Games",
   description:
     "Compete in 6 addictive mini-games with Perk! Connect your wallet, earn credits, and climb the leaderboards.",
   generator: "v0.app",
