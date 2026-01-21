@@ -6,6 +6,7 @@ interface Web3ContextType {
   address: string | null;
   isConnected: boolean;
   isConnecting: boolean;
+  hasCheckedConnection: boolean;
   connect: () => Promise<void>;
   disconnect: () => void;
 }
@@ -14,6 +15,7 @@ const Web3Context = createContext<Web3ContextType>({
   address: null,
   isConnected: false,
   isConnecting: false,
+  hasCheckedConnection: false,
   connect: async () => {},
   disconnect: () => {},
 });
@@ -23,8 +25,26 @@ export const useWeb3 = () => useContext(Web3Context);
 export function Web3Provider({ children }: { children: React.ReactNode }) {
   const [address, setAddress] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [hasCheckedConnection, setHasCheckedConnection] = useState(false);
 
-  // No auto-connect - wait for user to click "Connect Wallet" button
+  // Check for existing connection on mount (silent check, no popup)
+  useEffect(() => {
+    const checkExistingConnection = async () => {
+      if (typeof window !== "undefined" && window.ethereum) {
+        try {
+          // eth_accounts is a silent check - doesn't trigger popup
+          const accounts = await window.ethereum.request({ method: "eth_accounts" }) as string[];
+          if (accounts && accounts.length > 0) {
+            setAddress(accounts[0]);
+          }
+        } catch (err) {
+          console.log("No existing connection");
+        }
+      }
+      setHasCheckedConnection(true);
+    };
+    checkExistingConnection();
+  }, []);
 
   // Listen for account changes
   useEffect(() => {
@@ -77,6 +97,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
         address,
         isConnected: !!address,
         isConnecting,
+        hasCheckedConnection,
         connect,
         disconnect,
       }}

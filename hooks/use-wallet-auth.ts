@@ -15,7 +15,7 @@ interface Player {
 }
 
 export function useWalletAuth() {
-  const { address, isConnected, isConnecting, connect: web3Connect, disconnect: web3Disconnect } = useWeb3();
+  const { address, isConnected, isConnecting, hasCheckedConnection, connect: web3Connect, disconnect: web3Disconnect } = useWeb3();
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -69,13 +69,18 @@ export function useWalletAuth() {
   }, []);
 
   useEffect(() => {
+    if (!hasCheckedConnection) {
+      // Still checking initial connection state
+      return;
+    }
+    
     if (isConnected && address) {
       fetchOrCreatePlayer(address);
     } else {
       setPlayer(null);
       setLoading(false);
     }
-  }, [isConnected, address, fetchOrCreatePlayer]);
+  }, [isConnected, address, hasCheckedConnection, fetchOrCreatePlayer]);
 
   const connect = useCallback(async () => {
     await web3Connect();

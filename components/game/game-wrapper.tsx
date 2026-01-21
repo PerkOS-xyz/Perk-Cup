@@ -36,19 +36,31 @@ export function GameWrapper({ slug, children }: GameWrapperProps) {
     }
   }, [slug, player]);
 
+  // Only redirect if we've finished loading AND confirmed not connected
+  // Add a small delay to prevent race conditions with wallet state
   useEffect(() => {
-    if (!loading && !isConnected) {
-      router.push("/");
+    if (!loading && !isConnected && !player) {
+      const timeout = setTimeout(() => {
+        router.push("/");
+      }, 500);
+      return () => clearTimeout(timeout);
     }
-  }, [loading, isConnected, router]);
+  }, [loading, isConnected, player, router]);
 
   const startGame = useCallback(async () => {
-    if (!game || !player) return;
+    console.log("[v0] startGame called", { game, player });
+    if (!game || !player) {
+      console.log("[v0] Cannot start - missing game or player");
+      return;
+    }
     
+    console.log("[v0] Spending credits:", game.credit_cost);
     const success = await spendCredits(game.credit_cost);
+    console.log("[v0] spendCredits result:", success);
     if (success) {
       setScore(0);
       setGameState("playing");
+      console.log("[v0] Game started!");
     }
   }, [game, player, spendCredits]);
 
