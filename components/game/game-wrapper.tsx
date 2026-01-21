@@ -1,15 +1,13 @@
 "use client";
 
-import React from "react"
-
+import React from "react";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useParaAuth } from "@/hooks/use-para-auth";
+import { useWalletAuth } from "@/hooks/use-wallet-auth";
 import { getGameBySlug, type Game } from "@/lib/game-types";
 import { ArrowLeft, Coins, Play, Trophy, RotateCcw, Home } from "lucide-react";
-
 interface GameWrapperProps {
   slug: string;
   children: (props: {
@@ -23,7 +21,7 @@ interface GameWrapperProps {
 
 export function GameWrapper({ slug, children }: GameWrapperProps) {
   const router = useRouter();
-  const { player, spendCredits, addScore, isConnected, loading } = useParaAuth();
+  const { player, spendCredits, addScore, isConnected, loading } = useWalletAuth();
   const [game, setGame] = useState<Game | null>(null);
   const [gameState, setGameState] = useState<"idle" | "playing" | "finished">("idle");
   const [score, setScore] = useState(0);

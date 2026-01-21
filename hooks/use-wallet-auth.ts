@@ -1,7 +1,7 @@
 "use client";
 
-import { useModal, useAccount, useLogout } from "@getpara/react-sdk";
 import { useCallback, useEffect, useState } from "react";
+import { useWeb3 } from "@/lib/web3/provider";
 import { createClient } from "@/lib/supabase/client";
 
 interface Player {
@@ -14,10 +14,8 @@ interface Player {
   credits_last_reset: string;
 }
 
-export function useParaAuth() {
-  const { openModal } = useModal();
-  const { address, isConnected } = useAccount();
-  const logoutMutation = useLogout();
+export function useWalletAuth() {
+  const { address, isConnected, isConnecting, connect: web3Connect, disconnect: web3Disconnect } = useWeb3();
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -79,16 +77,14 @@ export function useParaAuth() {
     }
   }, [isConnected, address, fetchOrCreatePlayer]);
 
-  const connect = useCallback(() => {
-    openModal();
-  }, [openModal]);
+  const connect = useCallback(async () => {
+    await web3Connect();
+  }, [web3Connect]);
 
   const disconnect = useCallback(() => {
-    if (logoutMutation?.logout) {
-      logoutMutation.logout();
-      setPlayer(null);
-    }
-  }, [logoutMutation]);
+    web3Disconnect();
+    setPlayer(null);
+  }, [web3Disconnect]);
 
   const refreshPlayer = useCallback(async () => {
     if (address) {
@@ -171,6 +167,7 @@ export function useParaAuth() {
 
   return {
     isConnected,
+    isConnecting,
     address,
     player,
     loading,
