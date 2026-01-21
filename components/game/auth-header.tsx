@@ -5,10 +5,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useWalletAuth } from "@/hooks/use-wallet-auth";
-import { LogOut, Coins, Loader2 } from "lucide-react";
+import { useWeb3 } from "@/lib/web3/provider";
+import { LogOut, Coins, Loader2, CircleDollarSign } from "lucide-react";
 
 export function AuthHeader() {
   const { player, loading, disconnect } = useWalletAuth();
+  const { usdcBalance, chainId } = useWeb3();
+  
+  // Check if on Celo Mainnet (0xa4ec = 42220)
+  const isOnCelo = chainId === "0xa4ec";
 
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-border">
@@ -33,14 +38,32 @@ export function AuthHeader() {
           </div>
         </Link>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          {/* Celo Chain Badge */}
+          <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+            isOnCelo 
+              ? "bg-green-500/10 text-green-500 border border-green-500/20" 
+              : "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20"
+          }`}>
+            <div className={`w-2 h-2 rounded-full ${isOnCelo ? "bg-green-500" : "bg-yellow-500"}`} />
+            <span className="hidden sm:inline">{isOnCelo ? "Celo" : "Wrong Network"}</span>
+          </div>
+
+          {/* USDC Balance */}
+          {usdcBalance !== null && (
+            <div className="flex items-center gap-1.5 bg-blue-500/10 px-2.5 py-1 rounded-full border border-blue-500/20">
+              <CircleDollarSign className="h-3.5 w-3.5 text-blue-500" />
+              <span className="text-xs font-medium text-blue-500">{usdcBalance}</span>
+            </div>
+          )}
+
           {/* Credits Display */}
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           ) : player ? (
-            <div className="flex items-center gap-1.5 bg-accent/10 px-3 py-1.5 rounded-full">
-              <Coins className="h-4 w-4 text-accent" />
-              <span className="text-sm font-medium">{player.credits}</span>
+            <div className="flex items-center gap-1.5 bg-accent/10 px-2.5 py-1 rounded-full">
+              <Coins className="h-3.5 w-3.5 text-accent" />
+              <span className="text-xs font-medium">{player.credits}</span>
             </div>
           ) : null}
 
