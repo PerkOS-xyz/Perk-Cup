@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useWeb3 } from "@/lib/web3/provider";
 import { createClient } from "@/lib/supabase/client";
 
@@ -9,177 +9,137 @@ interface Player {
   wallet_address: string;
   username: string;
   credits: number;
-  total_score: number;
   level: number;
-  credits_last_reset: string;
+  total_score: number;
 }
 
 export function useWalletAuth() {
-  const { address, isConnected, isConnecting, hasCheckedConnection, connect: web3Connect, disconnect: web3Disconnect } = useWeb3();
+  const { address, isConnected, isConnecting, usdcBalance, chainId, isOnCelo, connect, disconnect } = useWeb3();
   const [player, setPlayer] = useState<Player | null>(null);
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   const fetchOrCreatePlayer = useCallback(async (walletAddress: string) => {
-    const supabase = createClient();
-    
-    // Check if player exists
-    const { data: existingPlayer } = await supabase
-      .from("players")
-      .select("*")
-      .eq("wallet_address", walletAddress.toLowerCase())
-      .single();
+    setLoading(true);
+    try {
+      // Check if player exists
+      const { data: existingPlayer, error: fetchError } = await supabase
+        .from("players")
+        .select("*")
+        .eq("wallet_address", walletAddress.toLowerCase())
+        .single();
 
-    if (existingPlayer) {
-      // Check if credits need to be reset (monthly)
-      const lastReset = new Date(existingPlayer.credits_last_reset);
-      const now = new Date();
-      const monthDiff = (now.getFullYear() - lastReset.getFullYear()) * 12 + 
-                        (now.getMonth() - lastReset.getMonth());
-      
-      if (monthDiff >= 1) {
-        // Reset credits
-        const { data: updatedPlayer } = await supabase
+      if (existingPlayer) {
+        setPlayer(existingPlayer);
+      } else if (fetchError?.code === "PGRST116") {
+        // Player doesn't exist, create new one
+        const username = `Perk${walletAddress.slice(2, 8)}`;
+        const { data: newPlayer, error: createError } = await supabase
           .from("players")
-          .update({ credits: 200, credits_last_reset: now.toISOString() })
-          .eq("id", existingPlayer.id)
+          .insert({
+            wallet_address: walletAddress.toLowerCase(),
+            username,
+            credits: 200,
+            level: 1,
+            total_score: 0,
+          })
           .select()
           .single();
-        
-        setPlayer(updatedPlayer);
-      } else {
-        setPlayer(existingPlayer);
+
+        if (createError) throw createError;
+        setPlayer(newPlayer);
       }
-    } else {
-      // Create new player
-      const username = `Perk${walletAddress.slice(-6).toUpperCase()}`;
-      const { data: newPlayer } = await supabase
-        .from("players")
-        .insert({
-          wallet_address: walletAddress.toLowerCase(),
-          username,
-          credits: 200,
-        })
-        .select()
-        .single();
-      
-      setPlayer(newPlayer);
+    } catch (err) {
+      console.error("Failed to fetch/create player:", err);
+      setPlayer(null);
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
-    if (!hasCheckedConnection) {
-      // Still checking initial connection state
-      return;
-    }
-    
     if (isConnected && address) {
       fetchOrCreatePlayer(address);
     } else {
       setPlayer(null);
       setLoading(false);
     }
-  }, [isConnected, address, hasCheckedConnection, fetchOrCreatePlayer]);
-
-  const connect = useCallback(async () => {
-    await web3Connect();
-  }, [web3Connect]);
-
-  const disconnect = useCallback(() => {
-    web3Disconnect();
-    setPlayer(null);
-  }, [web3Disconnect]);
-
-  const refreshPlayer = useCallback(async () => {
-    if (address) {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("players")
-        .select("*")
-        .eq("wallet_address", address.toLowerCase())
-        .single();
-      
-      if (data) setPlayer(data);
-    }
-  }, [address]);
+  }, [isConnected, address, fetchOrCreatePlayer]);
 
   const spendCredits = useCallback(async (amount: number): Promise<boolean> => {
     if (!player || player.credits < amount) return false;
-    
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("players")
-      .update({ credits: player.credits - amount })
-      .eq("id", player.id)
-      .select()
-      .single();
-    
-    if (error || !data) return false;
-    
-    setPlayer(data);
-    return true;
-  }, [player]);
 
-  const addScore = useCallback(async (gameId: string, score: number) => {
-    if (!player) return;
-    
-    const supabase = createClient();
-    
-    // Save game session
-    await supabase.from("game_sessions").insert({
-      player_id: player.id,
-      game_id: gameId,
-      score,
-    });
-    
-    // Update or insert high score
-    const { data: existingHighScore } = await supabase
-      .from("high_scores")
-      .select("*")
-      .eq("player_id", player.id)
-      .eq("game_id", gameId)
-      .single();
-    
-    if (existingHighScore) {
-      if (score > existingHighScore.score) {
-        await supabase
-          .from("high_scores")
-          .update({ score })
-          .eq("id", existingHighScore.id);
-      }
-    } else {
-      await supabase.from("high_scores").insert({
-        player_id: player.id,
-        game_id: gameId,
-        score,
-      });
+    try {
+      const { error } = await supabase
+        .from("players")
+        .update({ credits: player.credits - amount })
+        .eq("id", player.id);
+
+      if (error) throw error;
+      setPlayer((prev) => prev ? { ...prev, credits: prev.credits - amount } : null);
+      return true;
+    } catch (err) {
+      console.error("Failed to spend credits:", err);
+      return false;
     }
-    
-    // Update total score and level
-    const newTotalScore = player.total_score + score;
-    const newLevel = Math.floor(newTotalScore / 1000) + 1;
-    
-    const { data: updatedPlayer } = await supabase
-      .from("players")
-      .update({ total_score: newTotalScore, level: newLevel })
-      .eq("id", player.id)
-      .select()
-      .single();
-    
-    if (updatedPlayer) setPlayer(updatedPlayer);
-  }, [player]);
+  }, [player, supabase]);
+
+  const addScore = useCallback(async (gameId: string, score: number): Promise<void> => {
+    if (!player) return;
+
+    try {
+      // Update total score
+      await supabase
+        .from("players")
+        .update({
+          total_score: player.total_score + score,
+          level: Math.floor((player.total_score + score) / 1000) + 1,
+        })
+        .eq("id", player.id);
+
+      // Record high score
+      const { data: existingScore } = await supabase
+        .from("high_scores")
+        .select("*")
+        .eq("player_id", player.id)
+        .eq("game_id", gameId)
+        .single();
+
+      if (!existingScore || score > existingScore.score) {
+        await supabase.from("high_scores").upsert({
+          player_id: player.id,
+          game_id: gameId,
+          score,
+        });
+      }
+
+      setPlayer((prev) =>
+        prev
+          ? {
+              ...prev,
+              total_score: prev.total_score + score,
+              level: Math.floor((prev.total_score + score) / 1000) + 1,
+            }
+          : null
+      );
+    } catch (err) {
+      console.error("Failed to add score:", err);
+    }
+  }, [player, supabase]);
 
   return {
+    address,
     isConnected,
     isConnecting,
-    address,
     player,
     loading,
+    usdcBalance,
+    chainId,
+    isOnCelo,
     connect,
     disconnect,
-    refreshPlayer,
     spendCredits,
     addScore,
+    refreshPlayer: () => address && fetchOrCreatePlayer(address),
   };
 }

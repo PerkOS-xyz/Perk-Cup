@@ -9,6 +9,7 @@ import { useWalletAuth } from "@/hooks/use-wallet-auth";
 import { getGameBySlug, type Game } from "@/lib/game-types";
 import { AuthHeader } from "@/components/game/auth-header";
 import { ArrowLeft, Coins, Play, Trophy, RotateCcw, Home } from "lucide-react";
+
 interface GameWrapperProps {
   slug: string;
   children: (props: {
